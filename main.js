@@ -59,7 +59,7 @@ async function sendToDiscord(post) {
 
   // Add a "View Reel" button using components
   const payload = {
-    content: "@everyone 🚨 **New Instagram Reel just dropped!** 🔥",
+    content: "🚨 **New Instagram Reel just dropped!** 🔥",
     username: "Instagram Alerts",
     avatar_url:
       "https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png",
@@ -76,10 +76,7 @@ async function sendToDiscord(post) {
           },
         ],
       },
-    ],
-    allowed_mentions: {
-      parse: ["everyone"],
-    },
+    ]
   };
 
   try {
