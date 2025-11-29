@@ -1,0 +1,17 @@
+{
+  "name": "discord-insta-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "instagram-discord-bot.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "node-fetch": "^3.3.2"
+  }
+}
