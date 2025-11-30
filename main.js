@@ -83,7 +83,7 @@ async function sendToDiscord(post) {
     color: 0xe1306c,
     image: { url: post.thumbnail_url || post.media_url || null },
     footer: {
-      text: `📸 Posted ${timeAgo(post.timestamp)} on Instagram`,
+      text: `📸Posted ${timeAgo(post.timestamp)}`,
       icon_url:
         "https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png",
     },
