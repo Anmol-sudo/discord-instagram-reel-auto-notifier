@@ -1,6 +1,7 @@
 import fetch from "node-fetch";
 import pkg from "pg";
 import "dotenv/config";
+import express from "express"; // 👈 added for web worker
 
 const { Client } = pkg;
 
@@ -162,3 +163,15 @@ const randomDelay = Math.floor(Math.random() * 30) + 10; // 10–40 seconds
 setInterval(main, (INTERVAL * 60 + randomDelay) * 1000);
 
 main();
+
+// ✅ Web Worker (for Render Web Service)
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (req, res) => {
+  res.send("✅ Discord-Instagram notifier is running!");
+});
+
+app.listen(PORT, () => {
+  console.log(`🌐 Web server running on port ${PORT}`);
+});
