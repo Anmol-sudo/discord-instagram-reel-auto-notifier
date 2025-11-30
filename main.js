@@ -1,13 +1,13 @@
 import fetch from "node-fetch";
 import pkg from "pg";
 import "dotenv/config";
-import express from "express"; // 👈 added for web worker
+import express from "express";
 
 const { Client } = pkg;
 
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN; // From Graph API
-const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK; // From Discord
-const DATABASE_URL = process.env.DATABASE_URL; // From Render PostgreSQL
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
+const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK;
+const DATABASE_URL = process.env.DATABASE_URL;
 const INTERVAL = process.env.INTERVAL;
 
 // ✅ PostgreSQL Setup
@@ -16,7 +16,6 @@ const client = new Client({
   ssl: { rejectUnauthorized: false },
 });
 
-// Connect once
 await client.connect();
 
 // Ensure table exists
@@ -69,21 +68,33 @@ async function sendToDiscord(post) {
     return "just now";
   };
 
-  // Truncate caption
+  // 📝 Truncate caption for better readability
   const caption =
     post.caption && post.caption.length > 200
       ? post.caption.substring(0, 197) + "..."
       : post.caption || "(No caption)";
 
-  // Create embed
+  // 🎨 Embed layout (optimized for portrait reels)
   const embed = {
-    title: "🎥 New Instagram Reel!",
+    title: "🎬 New Instagram Reel!",
     description: caption,
     url: post.permalink,
-    color: 0xe1306c,
-    image: { url: post.thumbnail_url || post.media_url || null },
+    color: 0xe1306c, // Instagram pink
+    fields: [
+      {
+        name: "⠀", // invisible space for cleaner spacing
+        value: `[📲 **View on Instagram**](${post.permalink})`,
+        inline: false,
+      },
+    ],
+    image: {
+      // Prefer the media_url for portrait clarity (Discord auto-scales it)
+      url: post.media_url || post.thumbnail_url || null,
+    },
     footer: {
-      text: `📸Posted ${timeAgo(post.timestamp)}`,
+      text: `📸 Posted ${timeAgo(post.timestamp)} | ${new Date(
+        post.timestamp
+      ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
       icon_url:
         "https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png",
     },
@@ -96,19 +107,6 @@ async function sendToDiscord(post) {
     avatar_url:
       "https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png",
     embeds: [embed],
-    components: [
-      {
-        type: 1,
-        components: [
-          {
-            type: 2,
-            label: "🎬 View Reel",
-            style: 5,
-            url: post.permalink,
-          },
-        ],
-      },
-    ],
   };
 
   try {
@@ -158,20 +156,15 @@ async function main() {
   }
 }
 
-// Run every 10 minutes
-const randomDelay = Math.floor(Math.random() * 30) + 10; // 10–40 seconds
+// Run every INTERVAL minutes (randomized small delay)
+const randomDelay = Math.floor(Math.random() * 30) + 10; // 10–40 sec offset
 setInterval(main, (INTERVAL * 60 + randomDelay) * 1000);
-
 main();
 
-// ✅ Web Worker (for Render Web Service)
+// ✅ Web server (for Render uptime)
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-app.get("/", (req, res) => {
-  res.send("✅ Discord-Instagram notifier is running!");
-});
-
-app.listen(PORT, () => {
-  console.log(`🌐 Web server running on port ${PORT}`);
-});
+app.get("/", (req, res) =>
+  res.send("✅ Discord-Instagram notifier is running!")
+);
+app.listen(PORT, () => console.log(`🌐 Web server running on port ${PORT}`));
