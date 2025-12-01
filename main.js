@@ -49,6 +49,13 @@ async function setLastPostId(id) {
 }
 
 async function sendToDiscord(post) {
+  // Quick debug so you can see what IG returns
+  console.log("▶ IG media:", {
+    media_type: post.media_type,
+    media_url: post.media_url,
+    thumbnail_url: post.thumbnail_url,
+  });
+
   // Helper: format "time ago"
   const timeAgo = (date) => {
     const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
@@ -74,6 +81,24 @@ async function sendToDiscord(post) {
       ? post.caption.substring(0, 197) + "..."
       : post.caption || "(No caption)";
 
+  // 🎯 Choose the correct image URL
+  let imageUrl = null;
+  if (post.media_type === "IMAGE" || post.media_type === "CAROUSEL_ALBUM") {
+    // normal posts / carousels → media_url is a real image
+    imageUrl = post.media_url;
+  } else if (post.media_type === "VIDEO") {
+    // reels / videos → thumbnail_url is the image, media_url is mp4
+    imageUrl = post.thumbnail_url || null;
+  } else {
+    imageUrl = post.thumbnail_url || post.media_url || null;
+  }
+
+  if (!imageUrl) {
+    console.warn(
+      "⚠️ No image URL found for this post, embed will be text-only."
+    );
+  }
+
   // 🎨 Embed layout (optimized for portrait reels)
   const embed = {
     title: "🎬 New Instagram Reel!",
@@ -87,10 +112,7 @@ async function sendToDiscord(post) {
         inline: false,
       },
     ],
-    image: {
-      // Prefer the media_url for portrait clarity (Discord auto-scales it)
-      url: post.media_url || post.thumbnail_url || null,
-    },
+    image: imageUrl ? { url: imageUrl } : undefined,
     footer: {
       text: `📸 Posted ${timeAgo(post.timestamp)} | ${new Date(
         post.timestamp
